@@ -1,0 +1,157 @@
+---
+title: "practica_final"
+format: html
+editor: visual
+---
+
+Vamos a utilizar el dataset de semillas que se encuentra aquí: https://archive.ics.uci.edu/ml/datasets/seeds#
+
+Primero vamos a descargarnos el dataset con el siguiente comando:
+
+```{r}
+library(tidyverse)
+df_seeds <- read.table('https://archive.ics.uci.edu/ml/machine-learning-databases/00236/seeds_dataset.txt', col.names =c('area','perimetro','compacto','longitud','anchura','coeficient.asimetria','longitud.ranura','tipo'))
+```
+
+#### PREGUNTA 1
+
+¿Cuantas filas y cuantas columnas tiene el dataframe df_seeds?
+
+**Respuesta**:
+
+```{r}
+#summary(df_seed)
+print('Number of columns: ')
+print(ncol(df_seeds))
+
+print('Number of rows: ')
+print(nrow(df_seeds))
+```
+
+#### PREGUNTA 2
+
+Vamos a convertir en factor la columna tipo. Vamos a reemplazar los números por su correspondiente etiqueta (label). La correspondencia entre el código y el tipo es:
+
+-   1 - Kama
+-   2 - Rosa
+-   3 - Canadian
+
+Convierte en factor la columna tipo, respetando las etiquetas:
+
+**Respuesta**:
+
+```{r}
+# Setting the labels in the corresponding order
+df_seeds$tipo <- factor(df_seeds$tipo,labels=c("Kama", "Rosa", "Canadian"))
+
+print(df_seeds$tipo)
+
+
+```
+
+#### PREGUNTA 3
+
+¿Cual es la media del area de cada uno de los tipos?
+
+**Respuesta**
+
+```{r}
+#df |> group_by(tipo) |> summarize(area_medio=mean(area))
+
+paste("Peso medio tipo Kama: " , (mean(df_seeds[df_seeds$tipo == "Kama", "area"])), 2)
+paste("Peso medio tipo Rosa: " , (mean(df_seeds[df_seeds$tipo == "Rosa", "area"])), 2)
+paste("Peso medio tipo Canadian: " , (mean(df_seeds[df_seeds$tipo == "Canadian", "area"])), 2)
+```
+
+#### PREGUNTA 4
+
+¿Como se llama el siguiente tipo de gráfico?. ¿Qué representa la línea del centro de la caja?
+
+```{r}
+ggplot(df_seeds, aes(x=tipo, y=area)) + geom_boxplot()
+```
+
+**Respuesta**: '' #Diagrama de Caja y bigotes (box and whisker plot), la linea del centro en la caja representa la mediana (Median Value), divide en dos partes iguales la distribución de los datos, de forma que el 50% de los valores son menores o igual a este valor.
+
+#### PREGUNTA 5
+
+¿Como pintarías un diagrama de puntos (o scatterplot) con ggplot con las siguientes características? - En el eje X la variable compacto - En el eje Y la variable area - Cada tipo de semilla debería tener un color diferente
+
+**Respuesta**:
+
+```{r}
+library(ggplot2)
+ggplot(df_seeds, aes(x=compacto, y=area, color=tipo))+
+  geom_point()+
+  xlab('compacto')+
+  ylab('area')+
+  ggtitle("Scatterplot", subtitle = "compacto y area")
+
+  
+  
+```
+
+#### PREGUNTA 6
+
+¿Qué hace la siguiente línea?:
+
+```{r}
+df_seeds |> mutate(is_kama = tipo=='Kama') -> df_seeds
+
+#colnames(df_seeds)
+```
+
+**Respuesta**: '' La línea de código añade una nueva columna llamada is_kama al df , en esta columna aparecerán valores TRUE o FALSE si la semilla es de tipo Kama o no.
+
+#### PREGUNTA 7
+
+Vamos a dividir el conjunto de datos en test y training porque vamos a entrenar un modelo que me permita diferenciar si una semilla es de tipo Kama o no. ¿Por qué es aconsejable dividir el dataset en los grupos de train y test?
+
+```{r}
+set.seed(123) # Este set.seed hace que a todos nos generen los mismos número aleatorios
+idx <- sample(1:nrow(df_seeds), 0.7*nrow(df_seeds))
+df_seeds_train <- df_seeds[idx,]
+df_seeds_test <- df_seeds[-idx,]
+```
+
+**Respuesta**: '' Dividir los datos en grupos de training y de test ayuda a entrenar y evaluar eficazmente los algoritmos de machine learning. Una parte del conjunto de datos se utiliza para construir el modelo y el resto de los datos para evaluar el modelo. En el machine learning, la división de datos suele hacerse para evitar el "overfitting". Se trata de un caso en el que un modelo de machine learning se ajusta demasiado bien a sus datos de entrenamiento y no consigue ajustarse de forma fiable a datos adicionales.
+
+#### PREGUNTA 8
+
+Vamos a crear un modelo para realizar una clasificación binaria, donde le pasaremos como entrada las columnas: area, perimetro, compacto, longitud, coeficient.asimetria y longitud.ranura
+
+¿Qué tipo de algoritmo o modelo debería usar?
+
+**Respuesta**: '' Se puede usar La regresión logística o Logistic Regression, que es un algoritmo de clasificación que se utiliza para predecir la probabilidad de una respuesta binaria basada en una o mas variables predictoras o indipendientes. En la regresión logística, la variable dependiente es una variable binaria que contiene datos codificados como 1 o 0, sí o no, etc, el resultado es de naturaleza dicotómica.
+
+#### PREGUNTA 9
+
+Crea un modelo que me permita clasificar si una semilla es de tipo Kama o no con las siguientes columnas: area, perimetro, compacto, longitud, coeficient.asimetria, longitud.ranura
+
+**Respuesta**:
+
+```{r}
+```
+
+#### PREGUNTA 10
+
+Si usamos un umbral de 0 en la salida del modelo (lo que equivale a probabilidad de 0.5 cuando usamos el predict con type='response') ¿Cuales son los valores de precisión y exhausitividad?
+
+**Respuesta**.
+
+```{r}
+```
+
+#### PREGUNTA 11
+
+¿Qué están haciendo las siguientes líneas?
+
+```{r}
+set.seed(123)
+cl<-df_seeds |> select(area,perimetro,compacto,longitud,anchura,coeficient.asimetria,longitud.ranura) |> kmeans(3)
+table(real=df_seeds$tipo,cluster=cl$cluster)
+```
+
+**Respuesta**: '' Esta línea de código: primero crea números aleatorios (set.seed(123)), luego selecciona las columnas df (select(area, perimeter, compacto, etc.)) y agrupa los datos por similitud en tres clusters (kmeans(3)).
+
+Con Table() crea una tabla que compara el valor real de cada tipo de semilla con el cluster correspondiente, de esta forma se puede comprobar la calidad de la agrupación conseguida.
